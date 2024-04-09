@@ -1,0 +1,5 @@
+#!/bin/bash
+
+gcc main.c contact.c list.c -o main 
+chmod +x main
+./main

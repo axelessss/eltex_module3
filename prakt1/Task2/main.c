@@ -5,9 +5,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-void print_sucsess1();
-void print_sucsess2();
-
 int main(int argc, char *argv[])
 {
     pid_t pid;
@@ -31,7 +28,7 @@ int main(int argc, char *argv[])
     else
         tasks = (argc-1)/2;
 
-
+    
     switch(pid = fork()) 
     {
         case -1:
@@ -39,7 +36,7 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         case 0:
             printf("This is child process\n");
-            for(int i = 1; i < tasks; i++)
+            for(int i = tasks+1; i < argc; i++)
             {
                 length = atoi(argv[i]);
                 printf("Площадь квадрата %d: %d\n", i, length*length);
@@ -48,7 +45,7 @@ int main(int argc, char *argv[])
 
         default:
         printf("This is parent process\n");
-            for(int i = tasks; i < argc; i++)
+            for(int i = 1; i <= tasks; i++)
             {
                 length = atoi(argv[i]);
                 printf("Площадь квадрата %d: %d\n", i, length*length);
@@ -56,6 +53,5 @@ int main(int argc, char *argv[])
             wait(&rv);
             printf("PARENT: RETURN STATUS FOR CHILD- %d\n", WEXITSTATUS(rv));
     }
-    
     exit(EXIT_SUCCESS);
 }

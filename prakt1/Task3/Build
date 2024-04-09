@@ -1,0 +1,14 @@
+#!/bin/bash
+
+gcc concat.c -o concat
+chmod +x concat
+gcc maxlen.c -o maxlen
+chmod +x maxlen
+gcc maxnum.c -o maxnum
+chmod +x maxnum
+gcc sum.c -o sum
+chmod +x sum
+
+gcc main.c -o main
+chmod +x main
+./main
