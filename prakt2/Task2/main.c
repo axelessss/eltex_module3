@@ -10,11 +10,14 @@
 int main(int argc, char *argv[])
 {
     pid_t pid;
-    int p[2];
+    int p1[2];
+    int p2[2];
     char buf[80];
+    char buf_change[80];
+    char buf_mul[80];
     char buf_recv[80];
     int count_args;
-
+    
     srand(time(NULL));
 
     if(argc < 2||!atoi(argv[1])||atoi(argv[1]) <= 0)
@@ -23,7 +26,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     
-    if(pipe(p)==-1)
+    if(pipe(p1)==-1 || pipe(p2) == -1)
     {
         perror("pipe");
         exit(EXIT_FAILURE);
@@ -38,28 +41,32 @@ int main(int argc, char *argv[])
             perror("fork");
             exit(EXIT_FAILURE);
         case 0:
+            close(p1[0]);
+            close(p2[1]);
             printf("This is child process\n");
-            close(p[0]);
 
             for(int i = 0; i < count_args; i++)
             {
                 sprintf(buf, "%d", rand()%100);
-                printf("Send %d: %s\n", i+1, buf);
-                write(p[1], buf, sizeof(int));
-            }            
+                write(p1[1], buf, sizeof(int));
+                printf("Sent %d: %s\n", i+1, buf);
+                read(p2[0], buf_recv, sizeof(buf_recv));
+                printf("Readen %d: %d\n", i+1, atoi(buf_recv));
+            }
+
             exit(EXIT_SUCCESS);
 
         default:
-        printf("This is parent process\n");
+            close(p1[1]);
+            close(p2[0]);
+            printf("This is parent process\n");
             
-            close(p[1]);
             for(int j = 0; j < count_args; j++)
             {
-                read(p[0], buf_recv, sizeof(buf_recv));
-                printf("Readen %d: %d\n", j+1, atoi(buf_recv));
-            }
-            
-            
+                read(p1[0], buf_change, sizeof(buf_change));
+                sprintf(buf_mul, "%d", atoi(buf_change)*2);
+                write(p2[1], buf_mul, sizeof(buf_mul));
+            }    
     }
     exit(EXIT_SUCCESS);
 }
