@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     char buf[80];
     char buf_recv[80];
     int count_args;
-    int readen;
+    int arg_num;
 
     srand(time(NULL));
 
@@ -46,26 +46,35 @@ int main(int argc, char *argv[])
             for(int i = 0; i < count_args; i++)
             {
                 sprintf(buf, "%d", rand()%100);
-                printf("Send %d: %s\n", i+1, buf);
-                write(p[1], buf, sizeof(int));
+
+                if(write(p[1], buf, sizeof(int))==0)
+                    continue;
+                else
+                    printf("Send %d: %s\n", i, buf);
             }            
             exit(EXIT_SUCCESS);
 
         default:
-        printf("This is parent process\n");
+            printf("This is parent process\n");
             
             close(p[1]);
             int file = open("contacts.txt", O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
-            for(int j = 0; j < count_args; j++)
+            while(arg_num < count_args)
             {
-                read(p[0], buf_recv, sizeof(buf_recv));
+                if(read(p[0], buf_recv, sizeof(buf_recv))==0)
+                    break;
+                    
+                else
+                {
+                    printf("Readen %d: %d\n", arg_num, atoi(buf_recv));
+                    write(file, buf_recv, sizeof(buf_recv));
+                    arg_num++;
+                }
                 
-                printf("Readen %d: %d\n", j+1, atoi(buf_recv));
-                write(file, buf_recv, sizeof(buf_recv));
             }
+            
+            
             close(file);
-            
-            
     }
     exit(EXIT_SUCCESS);
 }

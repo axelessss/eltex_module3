@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -31,10 +32,16 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    if(read(fd_fifo, &buf, sizeof(buf)) == -1)
-        fprintf(stderr, "Невозможно прочесть из FIFO\n");
-    else
-        printf("Прочитано из FIFO: %s\n",buf);
+    while(true)
+    {
+        if(read(fd_fifo, &buf, sizeof(buf)) == -1)
+        {
+            fprintf(stderr, "Невозможно прочесть из FIFO\n");
+            exit(EXIT_FAILURE);
+        }
 
+        else
+            printf("Прочитано из FIFO: %s\n",buf);
+    }
     exit(EXIT_SUCCESS);
 }

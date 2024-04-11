@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <errno.h>
+#include <time.h>
 #include <sys/wait.h>
 #include <string.h>
 #include <unistd.h>
@@ -8,13 +10,16 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#define N 100
+
 int main()
 {
     int fd_fifo; /*дескриптор FIFO*/
-    char buffer[]="Текстовая строка для fifo\n";
-    char buf[100];
+    char buffer[N];
+    char buf[N];
     char fifo_path[] = "/tmp/fifo0001.1";
 
+    srand(time(NULL));
     /*// Удаляем FIFO
     if (unlink(fifo_path) == -1) 
     {
@@ -77,13 +82,19 @@ int main()
     }
 
     /*Открываем fifo для чтения и записи*/
-    if((fd_fifo=open("fifo_path", O_RDWR)) == -1)
+    if((fd_fifo=open(fifo_path, O_RDWR)) == -1)
     {
         fprintf(stderr, "Невозможно открыть fifo\n");
         exit(EXIT_FAILURE);
     }
 
-    write(fd_fifo, buffer, strlen(buffer));
+    while(true)
+    {
+        sprintf(buffer, "%d", rand()%1000);
+        printf("Отправлено: %s\n", buffer);
+        write(fd_fifo, buffer, strlen(buffer));
+        sleep(2);
+    }
 
     exit(EXIT_SUCCESS);
 }

@@ -214,6 +214,15 @@ List* ReadFromFile(List *head)
         return NULL;
     }
 
+    file_pointer = read(file, &contact, sizeof(Contact));
+    if(file_pointer <= 0)
+    {
+        printf("Пустой файл, список контактов пуст \n");
+        close(file);
+        return NULL;
+    }
+    head = InsertContact(head, &contact);
+    
     while ((file_pointer = read(file, &contact, sizeof(Contact))) > 0) 
     {
         head = InsertContact(head, &contact);

@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     char args_in[N];
     char *arg;
     char args[N][N];
-    char **args_out = (char **)malloc(1000*sizeof(char*));
+    char **args_out = (char **)malloc(N*sizeof(char*));
 
     while(true)
     {
