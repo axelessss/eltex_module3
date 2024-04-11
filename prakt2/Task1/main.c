@@ -4,8 +4,9 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
+#include <fcntl.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+#include <sys/stat.h>
 
 int main(int argc, char *argv[])
 {
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
     char buf[80];
     char buf_recv[80];
     int count_args;
+    int readen;
 
     srand(time(NULL));
 
@@ -53,11 +55,15 @@ int main(int argc, char *argv[])
         printf("This is parent process\n");
             
             close(p[1]);
+            int file = open("contacts.txt", O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
             for(int j = 0; j < count_args; j++)
             {
                 read(p[0], buf_recv, sizeof(buf_recv));
+                
                 printf("Readen %d: %d\n", j+1, atoi(buf_recv));
+                write(file, buf_recv, sizeof(buf_recv));
             }
+            close(file);
             
             
     }

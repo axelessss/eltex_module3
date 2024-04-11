@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     char args_in[N];
     char *arg;
     char args[N][N];
-    char **args_out;
+    char **args_out = (char **)malloc(1000*sizeof(char*));
 
     while(true)
     {
@@ -37,8 +37,6 @@ int main(int argc, char *argv[])
             arg = strtok(NULL, " ");
             count_args++;
         }
-
-        args_out = (char **)malloc(count_args*sizeof(char*));
     
         for(int i = 0; i < count_args; i++)
         {
