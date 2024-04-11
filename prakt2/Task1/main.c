@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     char buf[80];
     char buf_recv[80];
     int count_args;
-    int arg_num;
+    int arg_num = 0;
 
     srand(time(NULL));
 
@@ -72,8 +72,6 @@ int main(int argc, char *argv[])
                 }
                 
             }
-            
-            
             close(file);
     }
     exit(EXIT_SUCCESS);
