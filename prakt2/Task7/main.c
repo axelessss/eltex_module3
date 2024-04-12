@@ -50,18 +50,23 @@ int main()
 
     while(true)
     {
-        printf("Убить процесс? 1-да 0-нет");
+        printf("Убить процесс? 2-SIGINT 3-SIGQUIT");
         scanf("%d", &action);
 
-        if(action == 1)
+        switch(action)
         {
-            kill(pid, SIGINT);
-            counter++;
+            case 2:
+                kill(pid, SIGINT);
+                exit(EXIT_SUCCESS);
+            
+            case 3:
+                kill(pid, SIGQUIT);
+                exit(EXIT_SUCCESS);
+            
+            default:
+                printf("wrong command");
+                break;
         }
-
-        if(counter==3)
-            exit(EXIT_SUCCESS);
     }
-    
     exit(EXIT_SUCCESS);
 }

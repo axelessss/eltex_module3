@@ -17,19 +17,20 @@ int wait_sig = 0;
 
 void listener(int sig) 
 {
-    printf("Получен сигнал %d\n", sig);
-    wait_sig++;
-
-    if(wait_sig == 3)
-    {   
-        printf("Получено 3 сигнала. Завершение процесса\n");
-        exit(EXIT_SUCCESS);
+    switch(sig)
+    {   case 2:
+            printf("Получен сигнал SIGINT");
+            break;
+        case 3:
+            printf("Получен сигнал SIGQUIT");
+            break;
     }
+    exit(EXIT_SUCCESS);
 }
 
 int main()
 {
-    int fd_fifo; /*дескриптор FIFO*/
+    int fd_fifo; 
     char buffer[N];
     char fifo_path[] = "/tmp/fifo0001.1";
     int pid = getpid();
@@ -42,7 +43,6 @@ int main()
         exit(EXIT_FAILURE);
     }
     
-    // Создаем FIFO
     if (mkfifo(fifo_path, O_RDWR) == -1) 
     {
         if (errno == EEXIST) 
@@ -61,7 +61,6 @@ int main()
         printf("FIFO успешно создан.\n");
     }
 
-    // Изменяем права доступа к FIFO
     if (chmod(fifo_path, O_RDWR) == -1) 
     {
         perror("chmod");
@@ -73,7 +72,6 @@ int main()
         printf("Права доступа к FIFO успешно изменены.\n");
     }
     
-    // Проверяем доступность FIFO для чтения
     if (access(fifo_path, R_OK) == 0) 
     {
         printf("У вас есть права на чтение FIFO.\n");
@@ -85,7 +83,6 @@ int main()
         printf("У вас нет прав на чтение FIFO.\n");
     }
 
-    // Проверяем доступность FIFO для записи
     if (access(fifo_path, W_OK) == 0) 
     {
         printf("У вас есть права на запись в FIFO.\n");
@@ -97,7 +94,6 @@ int main()
         printf("У вас нет прав на запись в FIFO.\n");
     }
 
-    /*Открываем fifo для чтения и записи*/
     if((fd_fifo=open(fifo_path, O_RDWR)) == -1)
     {
         fprintf(stderr, "Невозможно открыть fifo\n");
@@ -109,6 +105,7 @@ int main()
     write(fd_fifo, buffer, strlen(buffer));
 
     signal(SIGINT, listener);
+    signal(SIGQUIT, listener);
 
     while(true)
     {
