@@ -30,15 +30,20 @@ void sig_handler(int sig)
 int main(int argc, char *argv[])
 {
     pid_t pid;
+    int p[2];
     char buf_read[80];
     char buf_write[80];
-    int count_args;
     int arg_num = 0;
     int arg_num2 = 0;
     int file_pointer;
-    int arg;
 
     srand(time(NULL));
+
+    if(pipe(p)==-1)
+    {
+        perror("pipe");
+        exit(EXIT_FAILURE);
+    }
 
     switch(pid = fork()) 
     {
@@ -47,18 +52,25 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         case 0:
             printf("This is child process\n");
-
+            close(p[0]);
             signal(SIGUSR1, sig_handler);
             signal(SIGUSR2, sig_handler);
-
+            
             while(true)
             {
+                getpid();
                 if(denied)
-                    continue;
-
-                if(file = open("contacts.txt", O_RDONLY) == -1) 
                 {
-                    close(file);
+                    printf("acsess denied\n");
+                    sleep(3);
+                    continue;
+                }
+
+                file = open("contacts.txt", O_RDONLY);
+                if(file == -1) 
+                {
+                    printf("not open for read");
+                    sleep(3);
                     continue;
                 }
 
@@ -66,36 +78,49 @@ int main(int argc, char *argv[])
 
                 if(file_pointer = read(file, buf_read, sizeof(buf_read)) <= 0)
                 {
+                    printf("not read\n");
                     close(file);
+                    sleep(3);
                     continue;
                 }
-
-                printf("Readen: %s", buf_read);
+                write(p[1], buf_read, sizeof(buf_read));
+                printf("Readen by child: %s\n", buf_read);
                 arg_num2++;
                 close(file);
-                sleep(1);
+                sleep(3);
             }
             exit(EXIT_SUCCESS);
 
         default:
-            printf("This is parent process\n");
-            
+            printf("pid %d\n", pid);
+            close(p[1]);
+
             while(true)
             {
-                sleep(1);
+                sleep(3);
+                                
                 kill(pid, SIGUSR1);
-                if(file = open("contacts.txt", O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR) == -1) 
-                    continue;
+                file = open("contacts.txt", O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
 
-                lseek(file, sizeof(buf_read)*arg_num, SEEK_SET);
+                if(file == -1) 
+                {
+                    printf("not open for write\n");
+                    continue;
+                }
+
+                lseek(file, sizeof(buf_write)*arg_num, SEEK_SET);
                 sprintf(buf_write, "%d", rand()%100);
-                printf("%s", buf_write);
+
                 arg_num++;
-                write(file, buf_write, sizeof(buf_write));
+                write(file, buf_write, strlen(buf_write));
                 
-                close(file); 
-                //sleep(1);
+                close(file);
                 kill(pid, SIGUSR2); 
+
+                if(read(p[0], buf_read, sizeof(buf_read))==0)
+                    printf("bad value");
+                else
+                    printf("Readen_from_pipe by parent: %s\n", buf_read);
             }
     }
     exit(EXIT_SUCCESS);
