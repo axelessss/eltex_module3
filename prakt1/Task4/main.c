@@ -64,8 +64,8 @@ int main(int argc, char *argv[])
                 wait(&rv);
                 printf("\nPARENT: RETURN STATUS FOR CHILD- %d\n", WEXITSTATUS(rv));
         }
-    free(args_out);
     }
-
+    
+    free(args_out);
     exit(EXIT_SUCCESS);
 }
