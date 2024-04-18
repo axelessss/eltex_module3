@@ -10,12 +10,10 @@
 
 int main()
 {
+    pid_t pid;    
     int msqid; 
-
     char pathname[] = "key"; 
-
     key_t key; 
-
     int len, maxlen; 
 
     struct mymsgbuf
@@ -29,8 +27,6 @@ int main()
         printf("Can\'t generate key\n");
         exit(EXIT_FAILURE);
     }
-
-
 
     if((msqid = msgget(key, 0666 | IPC_CREAT)) < 0)
     {
