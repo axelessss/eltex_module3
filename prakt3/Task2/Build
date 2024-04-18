@@ -1,0 +1,6 @@
+#!/bin/bash
+
+gcc user1.c -o user1
+chmod +x user1
+gcc user2.c -o user2
+chmod +x user2
