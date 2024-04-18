@@ -84,4 +84,5 @@ int main()
                 printf("\nSent: %s\n", mybuf.mtext);
             }
     }
+    exit(EXIT_SUCCESS);
 } 

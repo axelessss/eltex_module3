@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
                 if(denied)
                 {
                     printf("acsess denied\n");
-                    sleep(3);
+                    sleep(1);
                     continue;
                 }
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
                 if(file == -1) 
                 {
                     printf("not open for read");
-                    sleep(3);
+                    sleep(1);
                     continue;
                 }
 
@@ -80,14 +80,14 @@ int main(int argc, char *argv[])
                 {
                     printf("not read\n");
                     close(file);
-                    sleep(3);
+                    sleep(1);
                     continue;
                 }
                 write(p[1], buf_read, sizeof(buf_read));
                 printf("Readen by child: %s\n", buf_read);
                 arg_num2++;
                 close(file);
-                sleep(3);
+                sleep(1);
             }
             exit(EXIT_SUCCESS);
 
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 
             while(true)
             {
-                sleep(3);
+                sleep(1);
                                 
                 kill(pid, SIGUSR1);
                 file = open("contacts.txt", O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);

@@ -10,6 +10,11 @@
 #include <signal.h>
 
 #define LAST_MESSAGE 255 /* Тип сообщения для прекращения работы программы 2 */
+struct mymsgbuf
+{
+    long mtype;
+    char mtext[81];
+} mybuf;
 
 bool stop = false;
 
@@ -29,11 +34,7 @@ int main(int argc, char* argv[])
 
     srand(time(NULL));
 
-    struct mymsgbuf
-    {
-        long mtype;
-        char mtext[81];
-    } mybuf;
+    
 
     switch(pid = fork())
     {

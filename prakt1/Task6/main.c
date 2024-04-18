@@ -35,7 +35,7 @@ int main()
     int count_args;
     char command[N];
     char *arg;
-    char home_dir[] = "/home/axeless";
+    char home_dir[] = "/home/akooleus";
     char this_dir[N];
     char prev_dir[N];
     char args[2][N];
