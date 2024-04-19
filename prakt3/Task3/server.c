@@ -7,15 +7,13 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define N 100
+#define N 128
 
 struct mymsgbuf
 {
-    bool status;
     int mtype;
     char mtext[N];
 } mybuf;
-
 
 int main(int argc, char* argv[])
 {
@@ -42,21 +40,18 @@ int main(int argc, char* argv[])
         maxlen = 81;
         if(len = msgrcv(msqid, (struct msgbuf *) &mybuf, N, 0, 0) < 0)
         {
-            printf("Can\'t receive message from queue\n");
-            exit(EXIT_FAILURE);
+            continue;
         }
 
-        if(len == 0)
-            continue;
+        //if(len == 0)
+          //  continue;
 
-        printf("\nReceived from user %d: %s\n", mybuf.mtype, mybuf.mtext);
-        sprintf(id, "User %d: ", mybuf.mtype);
-        strcat(id, mybuf.mtext);
-        strcpy(mybuf.mtext, id);
-
-        mybuf.status = true;
-
-        len = strlen(mybuf.mtext)+1;
+        printf("\nReceived from user %s\n", mybuf.mtext);
+        //sprintf(id, "User %s", mybuf.mtext);
+        //strcpy(mybuf.mtext, id);
+        mybuf.mtype = 2;
+        //len = strlen(mybuf.mtext)+1;
+        //printf("%s\n", mybuf.mtext);
         if (msgsnd(msqid, (struct msgbuf *) &mybuf, len, 0) < 0)
         {
             printf("Can\'t send message to queue1\n");
