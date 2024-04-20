@@ -1,6 +1,6 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/msg.h>
+#include <mqueue.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -8,7 +8,12 @@
 #include <unistd.h>
 #include <signal.h>
 
+#define QUEUE_NAME "/myqueue1"
+#define PRIORITY 1
+#define SIZE 256
+#define LAST_MESSAGE 255 /* Тип сообщения для прекращения работы программы 2 */
 #define N 128
+
 bool connected = false;
 
 void handler(int sig)
@@ -21,32 +26,25 @@ void handler(int sig)
 
 int main(int argc, char* argv[])
 {
-    int msqid; 
+    mqd_t ds; 
     char pathname[] = "key"; 
     pid_t pid;
-    key_t key; 
-    int count,len, maxlen; 
+    char text[SIZE];
+    struct mq_attr attr, old_attr;
+    int prio;
+    attr.mq_maxmsg = 32;
+    attr.mq_msgsize = SIZE;
+    int count, len, maxlen; 
     char input[N];
     char output[N][N];
     char message[N];
     char *arg;
     char uid[N];
 
-    struct mymsgbuf
-    {
-        int mtype;
-        char mtext[N];
-    } mybuf;
 
-    if((key = ftok(pathname,0)) < 0)
+    if ((ds = mq_open(QUEUE_NAME, O_CREAT | O_RDWR , 0777, &attr)) == (mqd_t)-1)
     {
-        printf("Can\'t generate key\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if((msqid = msgget(key, 0666 | IPC_CREAT)) < 0)
-    {
-        printf("Can\'t get msqid\n");
+        perror("Creating queue error");
         exit(EXIT_FAILURE);
     }
 
@@ -70,16 +68,13 @@ int main(int argc, char* argv[])
                 
                 maxlen = 81;
 
-                if(len = msgrcv(msqid, (struct msgbuf *) &mybuf, N, 0, 0) < 0)
-                {
-                    printf("Can\'t receive message from queue\n");
-                    exit(EXIT_FAILURE);
-                }
+                if (mq_receive(ds, text, SIZE, &prio) == -1)
+                    continue;
 
-                if(mybuf.mtype > 1)
+                if(prio > 1)
                 {
                     count = 0;
-                    strcpy(message, mybuf.mtext);
+                    strcpy(message, text);
                     arg = strtok(message, " ");
                     while(arg != NULL)
                     {
@@ -90,10 +85,9 @@ int main(int argc, char* argv[])
 
                     if(strcmp(uid, output[1]) == 0)
                         continue;
-                    
 
                     else
-                        printf("%s\n", mybuf.mtext); 
+                        printf("%s\n", text); 
                 }
             }
             exit(EXIT_SUCCESS);

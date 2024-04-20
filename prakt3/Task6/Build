@@ -1,0 +1,6 @@
+#!/bin/bash
+
+gcc user.c -o user
+chmod +x user
+gcc server.c -o server
+chmod +x server
