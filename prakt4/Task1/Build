@@ -1,0 +1,7 @@
+#!/bin/bash
+
+gcc sender.c -o sender
+gcc receiver.c -o receiver
+
+chmod +x sender
+chmod +x receiver
