@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-#define N 128
+#define N 100
 bool connected = false;
 
 void handler(int sig)
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
                 printf(">> ");
                 fgets(input, sizeof(input), stdin);
                 input[strcspn(input, "\n")] = '\0';
-
+                printf("input: %d\n", strcmp(input, "connect"));
                 sprintf(mybuf.mtext, "%d - %s", pid, input);
 
                 if(strcmp(input, "connect") == 0)

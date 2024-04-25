@@ -11,18 +11,30 @@
 #include <signal.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <time.h>
 
 #define SHM_SIZE 1024
 #define KEY "key"
 #define SEM_NAME "/my_semaphore"
 
-int main() 
+bool quit = false;
+void handler(int sig)
+{
+    quit = true;
+}
+
+int main(int argc, char *argv[]) 
 {
     int shmid;
     char *shm_ptr;
     key_t key;
     pid_t pid;
     sem_t *semaphore;
+    int i = 0;
+    int count;
+
+    srand(time(NULL));
+    
 
     if((key = ftok(KEY,0)) < 0)
     {
@@ -52,42 +64,56 @@ int main()
         exit(EXIT_FAILURE);
     }
     
-    switch(pid = fork())
+    /*switch(pid = fork())
     {
         case -1:
             perror("fork");
             exit(EXIT_FAILURE);
 
         case 0:
-
+            signal(SIGINT, handler);
             while(true)
             {
+                if(quit)
+                    break;
 
+                sleep(1);
             }
+            printf("\nChild: %d", i);
+            exit(EXIT_SUCCESS);
 
         default:
-
-            while (true)
+            signal(SIGINT, handler);
+            while(true)
             {
-                
+                if(quit)
+                    break;
+
+                count = rand()%100;
+                sleep(1);
             }
-            
-    }
+            printf("\nParent: %d", i);
+    }*/
+
     // Запись данных в разделяемую память
     sprintf(shm_ptr, "Hello, shared memory!");
     
     // Отключение сегмента от адресного пространства процесса
     shmdt(shm_ptr);
     
-    // Чтение данных из разделяемой памяти
-    shm_ptr = shmat(shmid, NULL, 0);
-    printf("Data read from shared memory: %s\n", shm_ptr);
+    for(int i = 0; i < 20; i++)
+    {
+        // Чтение данных из разделяемой памяти
+        shm_ptr = shmat(shmid, NULL, 0);
+        printf("Data read from shared memory: %s\n", shm_ptr);
+        shmdt(shm_ptr);
+    }
     
     // Отключение сегмента от адресного пространства процесса
-    shmdt(shm_ptr);
+    
     
     // Удаление сегмента разделяемой памяти
     shmctl(shmid, IPC_RMID, NULL);
     
-    return 0;
+    exit(EXIT_SUCCESS);
 }

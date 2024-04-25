@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define N 128
+#define N 100
 
 struct mymsgbuf
 {
@@ -39,32 +39,26 @@ int main(int argc, char* argv[])
     {
         maxlen = 81;
         if(len = msgrcv(msqid, (struct msgbuf *) &mybuf, N, 0, 0) < 0)
-        {
             continue;
-        }
-
-        //if(len == 0)
-          //  continue;
-
-        //printf("%d\n", strcmp("connect", mybuf.mtext));
-        if(strcmp(mybuf.mtext, "connect") == 0)
+        
+        if(!strcmp(mybuf.mtext, "connect"))
         {
-            //printf("connected user %d", users);
+            printf("connected user %d", users);
             users++;
         }
 
-        else if(strcmp(mybuf.mtext, "disconnect") == 0)
+        else if(!(mybuf.mtext, "disconnect"))
         {
-            //printf("disconnected user %d", users);
+            printf("disconnected user %d", users);
             users--;
         }
 
-        //printf("Users: %d\n", users);
         sprintf(id, "User %s", mybuf.mtext);
         strcpy(mybuf.mtext, id);
         mybuf.mtype = 2;
         len = strlen(mybuf.mtext)+1;
         printf("%s\n", mybuf.mtext);
+
         for(int i = 0; i < users; i++)
         {
             if (msgsnd(msqid, (struct msgbuf *) &mybuf, len, 0) < 0)

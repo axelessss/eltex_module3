@@ -46,7 +46,7 @@ int main()
 
     while(true)
     {
-        sem_wait(semaphore);
+        sem_trywait(semaphore);
         if(read(fd_fifo, &buf, sizeof(buf)) == -1)
         {
             fprintf(stderr, "Невозможно прочесть из FIFO\n");

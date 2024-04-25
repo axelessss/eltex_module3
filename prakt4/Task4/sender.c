@@ -44,7 +44,7 @@ int main()
 
     while(true)
     {
-        sem_wait(semaphore);
+        sem_trywait(semaphore);
         sprintf(buffer, "%d", rand()%1000);
         printf("Отправлено: %s\n", buffer);
         write(fd_fifo, buffer, strlen(buffer));
