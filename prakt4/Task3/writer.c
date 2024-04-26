@@ -12,6 +12,9 @@
 #include <sys/sem.h>
 #include <signal.h>
 
+#define N 100
+#define NUM_PROCESSES 5
+
 union semun 
 {
     int val; /* значение для SETVAL */
@@ -23,12 +26,9 @@ union semun
 
 int main(int argc, char *argv[])
 {
-    char buf_read[80];
-    char buf_write[80];
+    char buf_write[N];
     int arg_num = 0;
-    int arg_num2 = 0;
     int file;
-    int file_pointer;
 
     key_t key;
     int sem_id;
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
     key = ftok("key", getpid());
 
-    if ((sem_id = semget(key, 1, IPC_CREAT | 0666)) == -1) 
+    if ((sem_id = semget(key, 1, IPC_CREAT |  0666)) == -1) 
     {
         perror("semget");
         exit(EXIT_FAILURE);
