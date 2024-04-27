@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     
-    /*switch(pid = fork())
+    switch(pid = fork())
     {
         case -1:
             perror("fork");
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
                 sleep(1);
             }
             printf("\nParent: %d", i);
-    }*/
+    }
 
     // Запись данных в разделяемую память
     sprintf(shm_ptr, "Hello, shared memory!");

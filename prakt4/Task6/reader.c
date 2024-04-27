@@ -3,28 +3,19 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <time.h>
 #include <fcntl.h>
 #include <stdbool.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
+#include <semaphore.h>
 #include <signal.h>
 
 #define N 100
 #define NUM_PROCESSES 2
+#define SEM_WRITE "/sem_write"
+#define SEM_READ "/sem_read"
 
 bool quit = false;
-
-union semun 
-{
-    int val; /* значение для SETVAL */
-    struct semid_ds *buf; /* буферы для IPC_STAT, IPC_SET */
-    unsigned short *array; /* массивы для GETALL, SETALL */
-    /* часть, особенная для Linux: */
-    struct seminfo *__buf; /* буфер для IPC_INFO */
-};
 
 void handler(int sig)
 {
@@ -33,35 +24,28 @@ void handler(int sig)
 
 int main(int argc, char *argv[])
 {
+    sem_t *sem_write, *sem_read;
     char buf_read[N];
     int arg_num = 0;
     int file;
     int file_pointer;
     int number_proc;
 
-    key_t key;
-    int sem_id;
-    union semun arg;
-    struct sembuf lock_res = {1, -1, 0};
-    struct sembuf rel_res = {1, 1, 0};
+    sem_write = sem_open(SEM_WRITE, O_CREAT);
+    sem_read = sem_open(SEM_READ, O_CREAT);
 
-    srand(time(NULL));
-
-    key = ftok("key", 0);
-
-    if ((sem_id = semget(key, 2, IPC_CREAT |  0666)) == -1) 
+    if (sem_write == SEM_FAILED || sem_read == SEM_FAILED) 
     {
-        perror("semget");
+        perror("sem_open");
         exit(EXIT_FAILURE);
     }
     
     signal(SIGINT, handler);
 
-    if (semop(sem_id, &lock_res, 1) == -1) 
-    {
-        perror("semop");
-        exit(EXIT_FAILURE);
-    }
+    sem_wait(sem_read);
+
+    sem_getvalue(sem_read, &number_proc);
+    printf("value: %d\n", number_proc);
 
     while(true)
     {
@@ -93,6 +77,6 @@ int main(int argc, char *argv[])
         sleep(1);
     }
     
-    semop(sem_id, &rel_res, 1);
+    sem_post(sem_read);
     exit(EXIT_SUCCESS);
 }

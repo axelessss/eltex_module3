@@ -1,0 +1,6 @@
+#!/bin/bash
+
+gcc writer.c -o writer
+gcc reader.c -o reader
+chmod +x writer
+chmod +x reader

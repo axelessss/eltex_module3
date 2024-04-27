@@ -13,7 +13,7 @@
 #include <signal.h>
 
 #define N 100
-#define NUM_PROCESSES 5
+#define NUM_PROCESSES 2
 
 union semun 
 {
@@ -38,9 +38,9 @@ int main(int argc, char *argv[])
 
     srand(time(NULL));
 
-    key = ftok("key", getpid());
+    key = ftok("key", 0);
 
-    if ((sem_id = semget(key, 1, IPC_CREAT |  0666)) == -1) 
+    if ((sem_id = semget(key, 2, IPC_CREAT |  0666)) == -1) 
     {
         perror("semget");
         exit(EXIT_FAILURE);
@@ -48,6 +48,9 @@ int main(int argc, char *argv[])
 
     arg.val = 1;
     semctl(sem_id, 0, SETVAL, arg);
+
+    arg.val = NUM_PROCESSES;
+    semctl(sem_id, 1, SETVAL, arg);
 
     while(true)
     {
@@ -72,7 +75,6 @@ int main(int argc, char *argv[])
         write(file, buf_write, strlen(buf_write));
                 
         close(file);
-
         semop(sem_id, &rel_res, 1);
     }
     
