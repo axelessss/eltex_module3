@@ -16,6 +16,7 @@
 #define SHM_SIZE 1024
 #define KEY "key"
 #define SEM_NAME "/my_semaphore"
+#define N 128
 
 bool quit = false;
 void handler(int sig)
@@ -32,6 +33,8 @@ int main(int argc, char *argv[])
     sem_t *semaphore;
     int i = 0;
     int count;
+    int nums[N];
+    int data_count = 0;
 
     srand(time(NULL));
     
@@ -57,13 +60,6 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     
-    // Подключение сегмента к адресному пространству процесса
-    if ((shm_ptr = shmat(shmid, NULL, 0)) == (char *) -1) 
-    {
-        perror("shmat");
-        exit(EXIT_FAILURE);
-    }
-    
     switch(pid = fork())
     {
         case -1:
@@ -71,49 +67,102 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
 
         case 0:
+            int min, max;
             signal(SIGINT, handler);
             while(true)
             {
                 if(quit)
                     break;
 
+                sem_wait(semaphore);
+
+                // Подключение сегмента к адресному пространству процесса
+                if ((shm_ptr = shmat(shmid, NULL, 0)) == (char *) -1) 
+                {
+                    perror("shmat");
+                    exit(EXIT_FAILURE);
+                }
+
+                max = 0;
+                min = shm_ptr[1];
+
+                for (int i = 1; i < shm_ptr[0]; i++)
+                {
+                    if(shm_ptr[i] < min)
+                        min = shm_ptr[i];
+                    
+                    if(shm_ptr[i] > max)
+                        max = shm_ptr[i];
+                }
+    
+                shm_ptr[shm_ptr[0]] = max;
+                shm_ptr[shm_ptr[0]+1] = min;
+
+                // Отключение сегмента от адресного пространства процесса
+                if (shmdt(shm_ptr) == -1) 
+                {
+                    perror("shmdt");
+                    exit(1);
+                }
+                sem_post(semaphore);
                 sleep(1);
             }
-            printf("\nChild: %d", i);
             exit(EXIT_SUCCESS);
 
         default:
             signal(SIGINT, handler);
+
             while(true)
             {
                 if(quit)
                     break;
 
+                sem_wait(semaphore);
+
+                // Подключение сегмента к адресному пространству процесса
+                if ((shm_ptr = shmat(shmid, NULL, 0)) == (char *) -1) 
+                {
+                    perror("shmat");
+                    exit(EXIT_FAILURE);
+                }
+
                 count = rand()%100;
+                shm_ptr[0] = count;
+
+                for(int i = 1; i < count; i++)
+                    shm_ptr[i] = rand()%100;
+                
+                // Отключение сегмента от адресного пространства процесса
+                if (shmdt(shm_ptr) == -1) 
+                {
+                    perror("shmdt");
+                    exit(EXIT_FAILURE);
+                }
+                sem_post(semaphore);
+
+                sem_wait(semaphore);
+
+                if ((shm_ptr = shmat(shmid, NULL, 0)) == (char *) -1) 
+                {
+                    perror("shmat");
+                    exit(EXIT_FAILURE);
+                }
+
+                printf("Max: %d\n", shm_ptr[shm_ptr[0]]);
+                printf("Min: %d\n\n", shm_ptr[shm_ptr[0]+1]);
+
+                 // Отключение сегмента от адресного пространства процесса
+                if (shmdt(shm_ptr) == -1) 
+                {
+                    perror("shmdt");
+                    exit(EXIT_FAILURE);
+                }
+                sem_post(semaphore);
                 sleep(1);
             }
-            printf("\nParent: %d", i);
     }
-
-    // Запись данных в разделяемую память
-    sprintf(shm_ptr, "Hello, shared memory!");
-    
-    // Отключение сегмента от адресного пространства процесса
-    shmdt(shm_ptr);
-    
-    for(int i = 0; i < 20; i++)
-    {
-        // Чтение данных из разделяемой памяти
-        shm_ptr = shmat(shmid, NULL, 0);
-        printf("Data read from shared memory: %s\n", shm_ptr);
-        shmdt(shm_ptr);
-    }
-    
-    // Отключение сегмента от адресного пространства процесса
-    
-    
     // Удаление сегмента разделяемой памяти
     shmctl(shmid, IPC_RMID, NULL);
-    
+    unlink(SEM_NAME);
     exit(EXIT_SUCCESS);
 }
