@@ -1,0 +1,8 @@
+#!/bin/bash
+
+gcc client.c -o client
+chmod +x client
+gcc server.c -o server
+chmod +x server
+gcc -o wireshark wireshark.c -lpcap
+chmod +x wireshark
